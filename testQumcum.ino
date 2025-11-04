@@ -1,8 +1,16 @@
 #include <Wire.h>
 
-#define SERVO_I2C_ADDR 8  // サーボ制御ボードのI2Cアドレス
+#define SERVO_I2C_ADDR 8  // サーボ制御ICのI2Cアドレス
 
-#define HEAD 4;
+#define R_HAND  0
+#define R_FOOT  1
+#define R_ANKLE 2
+#define HEAD    3
+#define L_ANKLE 4
+#define L_FOOT  5
+#define L_HAND  6
+
+int TEST = R_HAND;
 
 // -------------------------
 // I2Cでサーボボードにコマンドを送信する関数
@@ -28,7 +36,7 @@ uint16_t receiveDataFromServoBoard(uint8_t* buffer, int size) {
 }
 
 // -------------------------
-// サーボボードの初期化（動作モード設定とPWM有効化）
+// サーボボードの初期化（動作モード設定）
 // -------------------------
 void initializeServoBoard() {
     uint8_t cmd[10] = {0};
@@ -38,23 +46,7 @@ void initializeServoBoard() {
     cmd[1] = 1; // スイッチON
     sendCommandToServoBoard(cmd, 2);
 
-    // PWM出力を有効化
-    memset(cmd, 0, sizeof(cmd));
-    cmd[0] = 2;  // コマンド番号
-    cmd[1] = HEAD;  // 出力ON
-    *(uint16_t*)(&(cmd[2])) = 1; // 有効化
-    sendCommandToServoBoard(cmd, 4);
-
-    delay(100); // 少し待つ
-
-    // PWM出力を有効化
-    memset(cmd, 0, sizeof(cmd));
-    cmd[0] = 2;  // コマンド番号
-    cmd[1] = 4;  // 出力ON
-    *(uint16_t*)(&(cmd[2])) = 1; // 有効化
-    sendCommandToServoBoard(cmd, 4);
-
-    delay(100); // 少し待つ
+    delay(5000); // 少し待つ
 }
 
 // -------------------------
@@ -114,24 +106,18 @@ void setup() {
 }
 
 void loop() {
+    int ch = TEST;
+
     // サーボを0度に動かす
-    moveServoAndCheck(4, 0, 1000);
+    moveServoAndCheck(ch, 600, 1000);
 
     // サーボを180度に動かす
-    moveServoAndCheck(4, 1800, 1000);
-
-    // 移動中の角度を10回チェック
-    for (int i = 0; i < 10; i++) {
-        delay(100);
-        uint16_t currentAngle = getServoAngle(4);
-        Serial.print("移動中の角度: ");
-        Serial.println(currentAngle / 10.0);
-    }
+    moveServoAndCheck(ch, 1200, 1000);
 
     delay(400);
 
     // サーボを90度に動かす
-    moveServoAndCheck(4, 900, 1000);
+    //moveServoAndCheck(ch, 900, 1000);
 
     delay(1000); // 次のループまで待機
 }
